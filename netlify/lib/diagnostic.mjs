@@ -63,7 +63,9 @@ export function questionnairePublic(ref, langue) {
       .sort(parOrdre)
       .map((o) => ({ code: o.code, libelle: texte(o, 'libelle', langue) }));
   }
+  const contact = ref.parametres.find((p) => p.cle === 'contact_email')?.valeur ?? '';
   return {
+    contact_email: /^[^\s@<>"]+@[^\s@<>"]+\.[a-z]{2,}$/i.test(contact) ? contact : null,
     niveaux: [...ref.niveaux]
       .sort((a, b) => a.niveau - b.niveau)
       .map((n) => ({ niveau: n.niveau, libelle: texte(n, 'libelle', langue), description: texte(n, 'description', langue) })),

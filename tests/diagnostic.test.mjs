@@ -155,3 +155,12 @@ test('lignes enregistrées : alignées sur les colonnes du classeur, profil en l
     axe: 'Axe A', question_id: 'A1', question: 'Question A1', niveau: 1,
   });
 });
+
+test('adresse de contact : renvoyée seulement si elle est valide', () => {
+  const ref = referentiel();
+  assert.equal(questionnairePublic(ref, 'fr').contact_email, null);
+  ref.parametres.push({ cle: 'contact_email', valeur: 'contact@exemple.fr' });
+  assert.equal(questionnairePublic(ref, 'fr').contact_email, 'contact@exemple.fr');
+  ref.parametres.at(-1).valeur = 'javascript:alert(1)';
+  assert.equal(questionnairePublic(ref, 'fr').contact_email, null);
+});

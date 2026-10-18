@@ -3,9 +3,9 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Diagnostic 4 Shifts – Opale Next</title>
+<title>Diagnostic 4 Shifts</title>
 <meta name="description" content="Situez votre organisation sur les quatre shifts du Future of Work 2030 et obtenez une première feuille de route.">
-<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Cpolygon points=%2716,1 29,8.5 29,23.5 16,31 3,23.5 3,8.5%27 fill=%27%231F6F68%27/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -16,8 +16,9 @@ a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible{ou
 header{border-bottom:1px solid #DADCD5}
 .top{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:20px 24px;max-width:1200px;margin:0 auto}
 .brand{font-family:'Space Grotesk',sans-serif;font-size:22px;font-weight:600;color:#12161C;text-decoration:none}
-.brand{white-space:nowrap}
-.brand span{color:#1F6F68}
+.brand{white-space:nowrap;display:flex;align-items:center;gap:12px}
+.hexas{display:flex;gap:3px}
+.hexas i{width:12px;height:14px;clip-path:polygon(50% 0,100% 25%,100% 75%,50% 100%,0 75%,0 25%)}
 main{max-width:820px;margin:0 auto;padding:0 24px 96px}
 .kicker{margin:56px 0 12px;font-family:'IBM Plex Mono',monospace;font-size:14px;letter-spacing:.12em;color:#1F6F68}
 h1{font-family:'Space Grotesk',sans-serif;font-size:clamp(34px,5vw,52px);line-height:1.05;font-weight:600;letter-spacing:-.02em;margin:0 0 20px}
@@ -76,18 +77,20 @@ footer{border-top:1px solid #DADCD5;padding:32px 24px;text-align:center;font-siz
 .langues button{font:inherit;background:transparent;border:1px solid transparent;border-radius:6px;padding:8px 10px;min-height:40px;min-width:44px;cursor:pointer;color:#5A6270}
 .langues button[aria-pressed="true"]{border-color:#12161C;color:#12161C;font-weight:500}
 .top-droite{display:flex;align-items:center;gap:16px;flex-wrap:wrap;justify-content:flex-end}
+.top{flex-wrap:wrap}
+@media (max-width:359px){.hexas{display:none}}
+@media (max-width:480px){.top{padding:16px;gap:8px;flex-wrap:nowrap}.brand{font-size:17px;gap:8px}.hexas i{width:10px;height:12px}.langues button{padding:6px 8px;min-width:40px}}
 </style>
 </head>
 <body>
 <header>
 <div class="top">
-<a class="brand" href="index.html">Opale <span>Next</span></a>
+<a class="brand" href="diagnostic.html"><span class="hexas" aria-hidden="true"><i style="background:#1F6F68"></i><i style="background:#34529A"></i><i style="background:#6B4F9A"></i><i style="background:#C4572F"></i><i style="background:#A97A1F"></i></span><span data-i18n="marque">Diagnostic 4 Shifts</span></a>
 <div class="top-droite">
 <div class="langues no-print" role="group" aria-label="Langue / Language">
 <button type="button" data-langue="fr" lang="fr" aria-pressed="true">FR</button>
 <button type="button" data-langue="en" lang="en" aria-pressed="false">EN</button>
 </div>
-<a href="index.html" data-i18n="retour">← Retour à l'accueil</a>
 </div>
 </div>
 </header>
@@ -120,22 +123,22 @@ footer{border-top:1px solid #DADCD5;padding:32px 24px;text-align:center;font-siz
 <section id="ecran-resultats" hidden></section>
 </main>
 
-<footer><span data-i18n="pied">Opale Next · Vincent Dupuis, entrepreneur individuel · SIREN 990 555 500</span> · <a href="mentions-legales.html" data-i18n="mentions">Mentions légales</a></footer>
+<footer><span data-i18n="pied">Vincent Dupuis, entrepreneur individuel · SIREN 990 555 500</span> · <a href="diagnostic-mentions.html" id="lien-mentions" data-i18n="mentions">Mentions légales et données</a></footer>
 
 <script>
 (function () {
   'use strict';
   var API = '/api/diagnostic';
-  var CLE_LANGUE = 'opale-langue';
+  var CLE_LANGUE = 'diagnostic-langue';
   var COULEURS = ['#1F6F68', '#34529A', '#6B4F9A', '#C4572F', '#A97A1F'];
 
   // Textes de l'interface. Le contenu du diagnostic (questions, niveaux, actions) vient du classeur, dans la langue demandée.
   var TEXTES = {
     fr: {
-      titre_page: 'Diagnostic 4 Shifts – Opale Next',
+      titre_page: 'Diagnostic 4 Shifts',
+      marque: 'Diagnostic 4 Shifts',
       kicker: 'DIAGNOSTIC 4 SHIFTS',
       description: 'Situez votre organisation sur les quatre shifts du Future of Work 2030 et obtenez une première feuille de route.',
-      retour: '← Retour à l\'accueil',
       titre: 'Votre organisation face à 2030.',
       intro: 'Quatre shifts : modèle d\'organisation, moments qui comptent, workflows redessinés, workforce digital twin. Pour chaque question, choisissez la situation la plus proche de la vôtre.',
       promesse: 'Vous obtenez votre niveau de maturité et une première feuille de route.',
@@ -180,8 +183,8 @@ footer{border-top:1px solid #DADCD5;padding:32px 24px;text-align:center;font-siz
       cta_texte: '30 minutes pour lire ces résultats ensemble et choisir par où commencer. Sans engagement.',
       cta_bouton: 'Échanger 30 minutes',
       cta_sujet: 'Diagnostic 4 Shifts : échanger sur mes résultats',
-      pied: 'Opale Next · Vincent Dupuis, entrepreneur individuel · SIREN 990 555 500',
-      mentions: 'Mentions légales',
+      pied: 'Vincent Dupuis, entrepreneur individuel · SIREN 990 555 500',
+      mentions: 'Mentions légales et données',
       offres: {
         diagnostic: 'Diagnostic 4 Shifts',
         leanai: 'Prioriser votre portefeuille IA',
@@ -190,10 +193,10 @@ footer{border-top:1px solid #DADCD5;padding:32px 24px;text-align:center;font-siz
       }
     },
     en: {
-      titre_page: '4 Shifts Assessment – Opale Next',
+      titre_page: '4 Shifts Assessment',
+      marque: '4 Shifts Assessment',
       kicker: '4 SHIFTS ASSESSMENT',
       description: 'Place your organisation on the four shifts of the Future of Work 2030 and get a first roadmap.',
-      retour: '← Back to home page',
       titre: 'Your organisation and 2030.',
       intro: 'Four shifts: operating model, moments that matter, redesigned workflows, workforce digital twin. For each question, choose the situation closest to yours.',
       promesse: 'You get your maturity level and a first roadmap.',
@@ -238,8 +241,8 @@ footer{border-top:1px solid #DADCD5;padding:32px 24px;text-align:center;font-siz
       cta_texte: '30 minutes to read these results together and choose where to start. No commitment.',
       cta_bouton: 'Book 30 minutes',
       cta_sujet: '4 Shifts Assessment: discuss my results',
-      pied: 'Opale Next · Vincent Dupuis, sole proprietor · SIREN 990 555 500',
-      mentions: 'Legal notice (French)',
+      pied: 'Vincent Dupuis, sole proprietor · SIREN 990 555 500',
+      mentions: 'Legal notice and data',
       offres: {
         diagnostic: '4 Shifts Assessment',
         leanai: 'Prioritise your AI portfolio',
@@ -306,6 +309,7 @@ footer{border-top:1px solid #DADCD5;padding:32px 24px;text-align:center;font-siz
       var valeur = t(elements[i].getAttribute('data-i18n'));
       if (typeof valeur === 'string') elements[i].textContent = valeur;
     }
+    $('lien-mentions').setAttribute('href', 'diagnostic-mentions.html?lang=' + langue);
     var boutons = document.querySelectorAll('[data-langue]');
     for (var j = 0; j < boutons.length; j++) {
       boutons[j].setAttribute('aria-pressed', String(boutons[j].getAttribute('data-langue') === langue));
@@ -401,7 +405,7 @@ footer{border-top:1px solid #DADCD5;padding:32px 24px;text-align:center;font-siz
         el('input', { type: 'text', id: 'site_web', name: 'site_web', tabindex: '-1', autocomplete: 'off' })));
       contenu.appendChild(bloc);
       contenu.appendChild(el('p', { class: 'mention' }, t('rgpd'),
-        el('a', { href: 'mentions-legales.html#donnees', text: t('en_savoir_plus') }), '.'));
+        el('a', { href: 'diagnostic-mentions.html?lang=' + langue + '#donnees', text: t('en_savoir_plus') }), '.'));
       $('suivant').textContent = t('voir_resultats');
     }
     if (focus !== false) {
@@ -505,10 +509,13 @@ footer{border-top:1px solid #DADCD5;padding:32px 24px;text-align:center;font-siz
 
     zone.appendChild(el('div', { class: 'actions-nav no-print' },
       el('button', { type: 'button', class: 'btn btn-secondary', id: 'imprimer', text: t('imprimer') })));
-    zone.appendChild(el('div', { class: 'cta' },
-      el('h2', { text: t('cta_titre') }),
-      el('p', { text: t('cta_texte') }),
-      el('a', { class: 'btn', href: 'mailto:vincent@opalenext.fr?subject=' + encodeURIComponent(t('cta_sujet')), text: t('cta_bouton') })));
+    // L'adresse de contact vient du classeur (parametres > contact_email). Sans adresse, pas d'appel à l'action.
+    if (questionnaire.contact_email) {
+      zone.appendChild(el('div', { class: 'cta' },
+        el('h2', { text: t('cta_titre') }),
+        el('p', { text: t('cta_texte') }),
+        el('a', { class: 'btn', href: 'mailto:' + questionnaire.contact_email + '?subject=' + encodeURIComponent(t('cta_sujet')), text: t('cta_bouton') })));
+    }
     $('imprimer').addEventListener('click', function () { window.print(); });
 
     if (focus !== false) {
