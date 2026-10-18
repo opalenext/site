@@ -72,25 +72,26 @@ export function questionnairePublic(ref, langue) {
   };
 }
 
-// Vérifie la saisie envoyée par le navigateur. Renvoie { erreur } ou { reponses, profil, langue }.
+// Vérifie la saisie envoyée par le navigateur. Renvoie { erreur } (un code, traduit par la fonction)
+// ou { reponses, profil, langue }.
 export function validerSaisie(ref, saisie) {
-  if (!saisie || typeof saisie !== 'object' || Array.isArray(saisie)) return { erreur: 'Requête invalide.' };
-  if (saisie.site_web) return { erreur: 'Requête invalide.' }; // champ piège invisible pour les robots
+  if (!saisie || typeof saisie !== 'object' || Array.isArray(saisie)) return { erreur: 'invalide' };
+  if (saisie.site_web) return { erreur: 'invalide' }; // champ piège invisible pour les robots
 
   const brutes = saisie.reponses;
-  if (!brutes || typeof brutes !== 'object' || Array.isArray(brutes)) return { erreur: 'Réponses manquantes.' };
+  if (!brutes || typeof brutes !== 'object' || Array.isArray(brutes)) return { erreur: 'incomplet' };
 
   const questions = questionsActives(ref);
   const connues = new Map(questions.map((q) => [q.id, q]));
   for (const id of Object.keys(brutes)) {
-    if (!connues.has(id)) return { erreur: 'Question inconnue. Rechargez la page.' };
+    if (!connues.has(id)) return { erreur: 'question_inconnue' };
   }
 
   const reponses = {};
   for (const q of questions) {
     const niveau = brutes[q.id];
     if (!Number.isInteger(niveau) || !q.reponses.some((r) => r.niveau === niveau)) {
-      return { erreur: 'Merci de répondre à toutes les questions.' };
+      return { erreur: 'incomplet' };
     }
     reponses[q.id] = niveau;
   }

@@ -16,6 +16,7 @@ a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible{ou
 header{border-bottom:1px solid #DADCD5}
 .top{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:20px 24px;max-width:1200px;margin:0 auto}
 .brand{font-family:'Space Grotesk',sans-serif;font-size:22px;font-weight:600;color:#12161C;text-decoration:none}
+.brand{white-space:nowrap}
 .brand span{color:#1F6F68}
 main{max-width:820px;margin:0 auto;padding:0 24px 96px}
 .kicker{margin:56px 0 12px;font-family:'IBM Plex Mono',monospace;font-size:14px;letter-spacing:.12em;color:#1F6F68}
@@ -71,26 +72,36 @@ select{font:inherit;width:100%;min-height:48px;padding:10px 12px;border:1px soli
 footer{border-top:1px solid #DADCD5;padding:32px 24px;text-align:center;font-size:15px;color:#5A6270}
 [hidden]{display:none!important}
 @media print{header,footer,.cta,.no-print{display:none!important}body{background:#FFF}.carte{break-inside:avoid}}
+.langues{display:flex;gap:4px;font-family:'IBM Plex Mono',monospace;font-size:14px}
+.langues button{font:inherit;background:transparent;border:1px solid transparent;border-radius:6px;padding:8px 10px;min-height:40px;min-width:44px;cursor:pointer;color:#5A6270}
+.langues button[aria-pressed="true"]{border-color:#12161C;color:#12161C;font-weight:500}
+.top-droite{display:flex;align-items:center;gap:16px;flex-wrap:wrap;justify-content:flex-end}
 </style>
 </head>
 <body>
 <header>
 <div class="top">
 <a class="brand" href="index.html">Opale <span>Next</span></a>
-<a href="index.html">← Retour à l'accueil</a>
+<div class="top-droite">
+<div class="langues no-print" role="group" aria-label="Langue / Language">
+<button type="button" data-langue="fr" lang="fr" aria-pressed="true">FR</button>
+<button type="button" data-langue="en" lang="en" aria-pressed="false">EN</button>
+</div>
+<a href="index.html" data-i18n="retour">← Retour à l'accueil</a>
+</div>
 </div>
 </header>
 
 <main id="app">
 <section id="ecran-accueil">
-<p class="kicker">DIAGNOSTIC 4 SHIFTS</p>
-<h1>Votre organisation face à 2030.</h1>
-<p class="lead">Quatre shifts : modèle d'organisation, moments qui comptent, workflows redessinés, workforce digital twin. Pour chaque question, choisissez la situation la plus proche de la vôtre.</p>
-<p id="duree">Vous obtenez votre niveau de maturité et une première feuille de route.</p>
-<p class="mention">Réponses anonymes. Aucune adresse email demandée.</p>
-<div class="actions-nav no-print"><button type="button" class="btn btn-primary" id="commencer" disabled>Chargement…</button></div>
+<p class="kicker" data-i18n="kicker">DIAGNOSTIC 4 SHIFTS</p>
+<h1 data-i18n="titre">Votre organisation face à 2030.</h1>
+<p class="lead" data-i18n="intro">Quatre shifts : modèle d'organisation, moments qui comptent, workflows redessinés, workforce digital twin. Pour chaque question, choisissez la situation la plus proche de la vôtre.</p>
+<p id="duree" data-i18n="promesse">Vous obtenez votre niveau de maturité et une première feuille de route.</p>
+<p class="mention" data-i18n="anonyme">Réponses anonymes. Aucune adresse email demandée.</p>
+<div class="actions-nav no-print"><button type="button" class="btn btn-primary" id="commencer" disabled data-i18n="chargement">Chargement…</button></div>
 <p class="erreur" id="erreur-chargement" role="alert" hidden></p>
-<noscript><p class="erreur">Le diagnostic nécessite JavaScript.</p></noscript>
+<noscript><p class="erreur">Le diagnostic nécessite JavaScript. / This assessment requires JavaScript.</p></noscript>
 </section>
 
 <form id="ecran-questions" hidden novalidate>
@@ -101,40 +112,176 @@ footer{border-top:1px solid #DADCD5;padding:32px 24px;text-align:center;font-siz
 <div id="etape-contenu"></div>
 <p class="erreur" id="erreur-etape" role="alert" hidden></p>
 <div class="actions-nav no-print">
-<button type="button" class="btn btn-secondary" id="precedent">Précédent</button>
-<button type="submit" class="btn btn-primary" id="suivant">Suivant</button>
+<button type="button" class="btn btn-secondary" id="precedent" data-i18n="precedent">Précédent</button>
+<button type="submit" class="btn btn-primary" id="suivant" data-i18n="suivant">Suivant</button>
 </div>
 </form>
 
 <section id="ecran-resultats" hidden></section>
 </main>
 
-<footer>Opale Next · Vincent Dupuis, entrepreneur individuel · SIREN 990 555 500 · <a href="mentions-legales.html">Mentions légales</a></footer>
+<footer><span data-i18n="pied">Opale Next · Vincent Dupuis, entrepreneur individuel · SIREN 990 555 500</span> · <a href="mentions-legales.html" data-i18n="mentions">Mentions légales</a></footer>
 
 <script>
 (function () {
   'use strict';
   var API = '/api/diagnostic';
+  var CLE_LANGUE = 'opale-langue';
   var COULEURS = ['#1F6F68', '#34529A', '#6B4F9A', '#C4572F', '#A97A1F'];
-  var OFFRES = {
-    diagnostic: 'Diagnostic 4 Shifts',
-    leanai: 'Prioriser votre portefeuille IA',
-    workforce: 'Stratégie workforce',
-    keynote: 'Conférences et ateliers dirigeants'
-  };
-  var PROFIL = [
-    ['fonction', 'Votre fonction'],
-    ['taille', 'Taille de votre organisation'],
-    ['secteur', 'Secteur']
-  ];
 
+  // Textes de l'interface. Le contenu du diagnostic (questions, niveaux, actions) vient du classeur, dans la langue demandée.
+  var TEXTES = {
+    fr: {
+      titre_page: 'Diagnostic 4 Shifts – Opale Next',
+      kicker: 'DIAGNOSTIC 4 SHIFTS',
+      description: 'Situez votre organisation sur les quatre shifts du Future of Work 2030 et obtenez une première feuille de route.',
+      retour: '← Retour à l\'accueil',
+      titre: 'Votre organisation face à 2030.',
+      intro: 'Quatre shifts : modèle d\'organisation, moments qui comptent, workflows redessinés, workforce digital twin. Pour chaque question, choisissez la situation la plus proche de la vôtre.',
+      promesse: 'Vous obtenez votre niveau de maturité et une première feuille de route.',
+      duree: function (n, m) { return n + ' questions. Environ ' + m + ' minutes. Vous obtenez votre niveau de maturité et une première feuille de route.'; },
+      anonyme: 'Réponses anonymes. Aucune adresse email demandée.',
+      chargement: 'Chargement…',
+      commencer: 'Commencer le diagnostic',
+      indisponible: 'Le diagnostic est momentanément indisponible.',
+      en_preparation: 'Le diagnostic est en cours de préparation.',
+      precedent: 'Précédent',
+      suivant: 'Suivant',
+      voir_resultats: 'Voir mes résultats',
+      calcul: 'Calcul en cours…',
+      etape: function (i, n) { return 'Étape ' + i + ' sur ' + n; },
+      shift: 'Shift',
+      consigne: 'Choisissez la situation la plus proche de la vôtre aujourd\'hui.',
+      niveau: 'Niveau',
+      incomplet: 'Merci de répondre à toutes les questions de cette étape.',
+      contexte: 'Votre contexte',
+      contexte_intro: 'Facultatif. Ces informations servent à comparer les résultats entre organisations comparables.',
+      profil: { fonction: 'Votre fonction', taille: 'Taille de votre organisation', secteur: 'Secteur' },
+      sans_reponse: 'Je préfère ne pas répondre',
+      ne_pas_remplir: 'Ne pas remplir',
+      rgpd: 'Vos réponses sont enregistrées de façon anonyme, pour établir des statistiques. Aucune donnée permettant de vous identifier n\'est collectée. ',
+      en_savoir_plus: 'En savoir plus',
+      envoi_echoue: 'L\'envoi a échoué. Merci de réessayer.',
+      resultats: 'Vos résultats.',
+      maturite: 'Niveau de maturité',
+      sur5: 'sur 5',
+      jauge: function (t, s) { return t + ' : ' + s + ' sur 5'; },
+      feuille: 'Votre feuille de route.',
+      feuille_intro: 'Peu de chantiers à la fois, dans le bon ordre. Les prérequis passent en premier.',
+      feuille_vide: 'Vous êtes au niveau le plus élevé sur chaque question. L\'enjeu est maintenant de durer.',
+      niveau_min: 'niveau',
+      objectif: 'Objectif : ',
+      semaines: function (n) { return 'environ ' + n + ' semaines'; },
+      offre: 'offre : ',
+      prerequis: 'Prérequis : ',
+      prerequis_item: function (q, n) { return q + ' au niveau ' + n + ' minimum'; },
+      imprimer: 'Imprimer ou enregistrer en PDF',
+      cta_titre: 'Et maintenant ?',
+      cta_texte: '30 minutes pour lire ces résultats ensemble et choisir par où commencer. Sans engagement.',
+      cta_bouton: 'Échanger 30 minutes',
+      cta_sujet: 'Diagnostic 4 Shifts : échanger sur mes résultats',
+      pied: 'Opale Next · Vincent Dupuis, entrepreneur individuel · SIREN 990 555 500',
+      mentions: 'Mentions légales',
+      offres: {
+        diagnostic: 'Diagnostic 4 Shifts',
+        leanai: 'Prioriser votre portefeuille IA',
+        workforce: 'Stratégie workforce',
+        keynote: 'Conférences et ateliers dirigeants'
+      }
+    },
+    en: {
+      titre_page: '4 Shifts Assessment – Opale Next',
+      kicker: '4 SHIFTS ASSESSMENT',
+      description: 'Place your organisation on the four shifts of the Future of Work 2030 and get a first roadmap.',
+      retour: '← Back to home page',
+      titre: 'Your organisation and 2030.',
+      intro: 'Four shifts: operating model, moments that matter, redesigned workflows, workforce digital twin. For each question, choose the situation closest to yours.',
+      promesse: 'You get your maturity level and a first roadmap.',
+      duree: function (n, m) { return n + ' questions. About ' + m + ' minutes. You get your maturity level and a first roadmap.'; },
+      anonyme: 'Anonymous answers. No email address required.',
+      chargement: 'Loading…',
+      commencer: 'Start the assessment',
+      indisponible: 'The assessment is temporarily unavailable.',
+      en_preparation: 'The assessment is being prepared.',
+      precedent: 'Previous',
+      suivant: 'Next',
+      voir_resultats: 'See my results',
+      calcul: 'Calculating…',
+      etape: function (i, n) { return 'Step ' + i + ' of ' + n; },
+      shift: 'Shift',
+      consigne: 'Choose the situation closest to yours today.',
+      niveau: 'Level',
+      incomplet: 'Please answer every question on this step.',
+      contexte: 'Your context',
+      contexte_intro: 'Optional. This information is used to compare results between similar organisations.',
+      profil: { fonction: 'Your role', taille: 'Size of your organisation', secteur: 'Sector' },
+      sans_reponse: 'I prefer not to say',
+      ne_pas_remplir: 'Do not fill in',
+      rgpd: 'Your answers are saved anonymously, for statistics. No data that can identify you is collected. ',
+      en_savoir_plus: 'Learn more',
+      envoi_echoue: 'Sending failed. Please try again.',
+      resultats: 'Your results.',
+      maturite: 'Maturity level',
+      sur5: 'out of 5',
+      jauge: function (t, s) { return t + ': ' + s + ' out of 5'; },
+      feuille: 'Your roadmap.',
+      feuille_intro: 'Few projects at a time, in the right order. Prerequisites come first.',
+      feuille_vide: 'You are at the highest level on every question. The challenge now is to make it last.',
+      niveau_min: 'level',
+      objectif: 'Target: ',
+      semaines: function (n) { return 'about ' + n + ' weeks'; },
+      offre: 'offer: ',
+      prerequis: 'Prerequisites: ',
+      prerequis_item: function (q, n) { return q + ' at level ' + n + ' or higher'; },
+      imprimer: 'Print or save as PDF',
+      cta_titre: 'What next?',
+      cta_texte: '30 minutes to read these results together and choose where to start. No commitment.',
+      cta_bouton: 'Book 30 minutes',
+      cta_sujet: '4 Shifts Assessment: discuss my results',
+      pied: 'Opale Next · Vincent Dupuis, sole proprietor · SIREN 990 555 500',
+      mentions: 'Legal notice (French)',
+      offres: {
+        diagnostic: '4 Shifts Assessment',
+        leanai: 'Prioritise your AI portfolio',
+        workforce: 'Workforce strategy',
+        keynote: 'Keynotes and executive workshops'
+      }
+    }
+  };
+  var PROFIL = ['fonction', 'taille', 'secteur'];
+
+  var langue = langueInitiale();
   var questionnaire = null;
   var reponses = {};
+  var profil = {};
   var etape = 0;
+  var ecran = 'accueil';
 
+  function t(cle) { return TEXTES[langue][cle]; }
   function $(id) { return document.getElementById(id); }
 
-  // Construit un élément sans innerHTML : tout le contenu venant de la base est inséré comme texte.
+  // Langue au chargement : ?lang= dans l'URL, sinon le choix déjà fait sur ce navigateur,
+  // sinon la première langue du navigateur qui est le français ou l'anglais, sinon l'anglais.
+  function langueInitiale() {
+    var demandee = new URLSearchParams(location.search).get('lang');
+    if (demandee === 'fr' || demandee === 'en') return demandee;
+    try {
+      var memorisee = localStorage.getItem(CLE_LANGUE);
+      if (memorisee === 'fr' || memorisee === 'en') return memorisee;
+    } catch (e) { /* stockage indisponible : on continue */ }
+    var langues = navigator.languages && navigator.languages.length ? navigator.languages : [navigator.language || ''];
+    for (var i = 0; i < langues.length; i++) {
+      var code = String(langues[i]).toLowerCase().slice(0, 2);
+      if (code === 'fr' || code === 'en') return code;
+    }
+    return 'en';
+  }
+
+  function nombre(x) {
+    return new Intl.NumberFormat(langue === 'fr' ? 'fr-FR' : 'en-GB', { maximumFractionDigits: 2 }).format(x);
+  }
+
+  // Construit un élément sans innerHTML : tout le contenu venant du classeur est inséré comme texte.
   function el(tag, attrs) {
     var e = document.createElement(tag);
     if (attrs) for (var k in attrs) {
@@ -148,6 +295,21 @@ footer{border-top:1px solid #DADCD5;padding:32px 24px;text-align:center;font-siz
       e.appendChild(typeof c === 'string' ? document.createTextNode(c) : c);
     }
     return e;
+  }
+
+  function appliquerTextesFixes() {
+    document.documentElement.lang = langue;
+    document.title = t('titre_page');
+    document.querySelector('meta[name="description"]').setAttribute('content', t('description'));
+    var elements = document.querySelectorAll('[data-i18n]');
+    for (var i = 0; i < elements.length; i++) {
+      var valeur = t(elements[i].getAttribute('data-i18n'));
+      if (typeof valeur === 'string') elements[i].textContent = valeur;
+    }
+    var boutons = document.querySelectorAll('[data-langue]');
+    for (var j = 0; j < boutons.length; j++) {
+      boutons[j].setAttribute('aria-pressed', String(boutons[j].getAttribute('data-langue') === langue));
+    }
   }
 
   function nbEtapes() { return questionnaire.axes.length + 1; } // un écran par shift, puis le profil
@@ -167,40 +329,44 @@ footer{border-top:1px solid #DADCD5;padding:32px 24px;text-align:center;font-siz
     p.hidden = !message;
   }
 
-  function chargement() {
-    fetch(API + '?lang=fr', { headers: { Accept: 'application/json' } })
-      .then(function (r) { return r.json().then(function (d) { if (!r.ok) throw new Error(d.erreur); return d; }); })
-      .then(function (d) {
-        questionnaire = d;
-        var n = nbQuestions();
-        if (!n) throw new Error('Le diagnostic est en cours de préparation.');
-        $('duree').textContent = n + ' questions. Environ ' + Math.max(3, Math.round(n * 0.6)) + ' minutes. Vous obtenez votre niveau de maturité et une première feuille de route.';
-        var b = $('commencer');
-        b.textContent = 'Commencer le diagnostic';
-        b.disabled = false;
-      })
-      .catch(function (e) {
-        $('commencer').hidden = true;
-        afficherErreur('erreur-chargement', (e && e.message) || 'Le diagnostic est momentanément indisponible.');
-      });
+  function appel(options, parametres) {
+    return fetch(API + (parametres || ''), options).then(function (r) {
+      return r.json().then(function (d) { if (!r.ok) throw new Error(d.erreur); return d; });
+    });
   }
 
-  function afficherEtape() {
+  function chargerQuestionnaire() {
+    return appel({ headers: { Accept: 'application/json' } }, '?lang=' + langue).then(function (d) {
+      questionnaire = d;
+      if (!nbQuestions()) throw new Error(t('en_preparation'));
+    });
+  }
+
+  function afficherAccueil() {
+    var b = $('commencer');
+    if (!questionnaire) return;
+    var n = nbQuestions();
+    $('duree').textContent = t('duree')(n, Math.max(3, Math.round(n * 0.6)));
+    b.textContent = t('commencer');
+    b.disabled = false;
+  }
+
+  function afficherEtape(focus) {
     var total = nbEtapes();
     var contenu = $('etape-contenu');
     contenu.textContent = '';
     afficherErreur('erreur-etape', '');
-    $('progression-texte').textContent = 'Étape ' + (etape + 1) + ' sur ' + total;
+    $('progression-texte').textContent = t('etape')(etape + 1, total);
     $('progression-barre').style.width = Math.round((etape / total) * 100) + '%';
     $('precedent').hidden = etape === 0;
 
     var titre;
     if (etape < questionnaire.axes.length) {
       var axe = questionnaire.axes[etape];
-      titre = el('h2', { tabindex: '-1', text: 'Shift ' + (etape + 1) + ' · ' + axe.titre });
+      titre = el('h2', { tabindex: '-1', text: t('shift') + ' ' + (etape + 1) + ' · ' + axe.titre });
       contenu.appendChild(titre);
       if (axe.description) contenu.appendChild(el('p', { text: axe.description }));
-      contenu.appendChild(el('p', { class: 'aide', text: 'Choisissez la situation la plus proche de la vôtre aujourd\'hui.' }));
+      contenu.appendChild(el('p', { class: 'aide', text: t('consigne') }));
       axe.questions.forEach(function (q) {
         var fs = el('fieldset', { id: 'q-' + q.id }, el('legend', { text: q.intitule }));
         if (q.aide) fs.appendChild(el('p', { class: 'aide', text: q.aide }));
@@ -210,111 +376,117 @@ footer{border-top:1px solid #DADCD5;padding:32px 24px;text-align:center;font-siz
           if (reponses[q.id] === r.niveau) input.checked = true;
           input.addEventListener('change', function () { reponses[q.id] = r.niveau; });
           liste.appendChild(el('label', null, input,
-            el('span', null, el('span', { class: 'niv', text: 'Niveau ' + r.niveau + ' · ' + libelleNiveau(r.niveau) }), r.libelle)));
+            el('span', null, el('span', { class: 'niv', text: t('niveau') + ' ' + r.niveau + ' · ' + libelleNiveau(r.niveau) }), r.libelle)));
         });
         fs.appendChild(liste);
         contenu.appendChild(fs);
       });
-      $('suivant').textContent = 'Suivant';
+      $('suivant').textContent = t('suivant');
     } else {
-      titre = el('h2', { tabindex: '-1', text: 'Votre contexte' });
+      titre = el('h2', { tabindex: '-1', text: t('contexte') });
       contenu.appendChild(titre);
-      contenu.appendChild(el('p', { text: 'Facultatif. Ces informations servent à comparer les résultats entre organisations comparables.' }));
+      contenu.appendChild(el('p', { text: t('contexte_intro') }));
       var bloc = el('div', { class: 'profil carte' });
-      PROFIL.forEach(function (p) {
-        var options = questionnaire.profil[p[0]] || [];
+      PROFIL.forEach(function (champ) {
+        var options = questionnaire.profil[champ] || [];
         if (!options.length) return;
-        var select = el('select', { id: 'profil-' + p[0], name: p[0] }, el('option', { value: '', text: 'Je préfère ne pas répondre' }));
+        var select = el('select', { id: 'profil-' + champ, name: champ }, el('option', { value: '', text: t('sans_reponse') }));
         options.forEach(function (o) { select.appendChild(el('option', { value: o.code, text: o.libelle })); });
-        bloc.appendChild(el('div', null, el('label', { for: 'profil-' + p[0], text: p[1] }), select));
+        select.value = profil[champ] || '';
+        select.addEventListener('change', function () { profil[champ] = select.value; });
+        bloc.appendChild(el('div', null, el('label', { for: 'profil-' + champ, text: t('profil')[champ] }), select));
       });
       bloc.appendChild(el('div', { class: 'piege', 'aria-hidden': 'true' },
-        el('label', { for: 'site_web', text: 'Ne pas remplir' }),
+        el('label', { for: 'site_web', text: t('ne_pas_remplir') }),
         el('input', { type: 'text', id: 'site_web', name: 'site_web', tabindex: '-1', autocomplete: 'off' })));
       contenu.appendChild(bloc);
-      contenu.appendChild(el('p', { class: 'mention' },
-        'Vos réponses sont enregistrées de façon anonyme, pour établir des statistiques. Aucune donnée permettant de vous identifier n\'est collectée. ',
-        el('a', { href: 'mentions-legales.html#donnees', text: 'En savoir plus' }), '.'));
-      $('suivant').textContent = 'Voir mes résultats';
+      contenu.appendChild(el('p', { class: 'mention' }, t('rgpd'),
+        el('a', { href: 'mentions-legales.html#donnees', text: t('en_savoir_plus') }), '.'));
+      $('suivant').textContent = t('voir_resultats');
     }
-    titre.focus();
-    window.scrollTo(0, 0);
+    if (focus !== false) {
+      titre.focus();
+      window.scrollTo(0, 0);
+    }
   }
 
   function etapeComplete() {
     if (etape >= questionnaire.axes.length) return true;
     var manquante = questionnaire.axes[etape].questions.filter(function (q) { return reponses[q.id] === undefined; })[0];
     if (!manquante) return true;
-    afficherErreur('erreur-etape', 'Merci de répondre à toutes les questions de cette étape.');
+    afficherErreur('erreur-etape', t('incomplet'));
     var premier = document.querySelector('#q-' + CSS.escape(manquante.id) + ' input');
     if (premier) premier.focus();
     return false;
   }
 
+  function calculer(recalcul) {
+    return appel({
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+      body: JSON.stringify({
+        langue: langue,
+        reponses: reponses,
+        profil: profil,
+        site_web: $('site_web') ? $('site_web').value : '',
+        recalcul: recalcul
+      })
+    });
+  }
+
   function envoyer() {
     var bouton = $('suivant');
     bouton.disabled = true;
-    bouton.textContent = 'Calcul en cours…';
-    var profil = {};
-    PROFIL.forEach(function (p) { var s = $('profil-' + p[0]); profil[p[0]] = s ? s.value : ''; });
-    fetch(API, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-      body: JSON.stringify({ langue: 'fr', reponses: reponses, profil: profil, site_web: $('site_web').value })
-    })
-      .then(function (r) { return r.json().then(function (d) { if (!r.ok) throw new Error(d.erreur); return d; }); })
-      .then(afficherResultats)
+    bouton.textContent = t('calcul');
+    calculer(false)
+      .then(function (res) { ecran = 'resultats'; afficherResultats(res); })
       .catch(function (e) {
         bouton.disabled = false;
-        bouton.textContent = 'Voir mes résultats';
-        afficherErreur('erreur-etape', (e && e.message) || 'L\'envoi a échoué. Merci de réessayer.');
+        bouton.textContent = t('voir_resultats');
+        afficherErreur('erreur-etape', (e && e.message) || t('envoi_echoue'));
       });
   }
 
-  function afficherResultats(res) {
+  function afficherResultats(res, focus) {
     $('ecran-questions').hidden = true;
     var zone = $('ecran-resultats');
     zone.textContent = '';
     zone.hidden = false;
 
-    var titre = el('h1', { tabindex: '-1', text: 'Vos résultats.' });
-    zone.appendChild(el('p', { class: 'kicker', text: 'DIAGNOSTIC 4 SHIFTS' }));
+    var titre = el('h1', { tabindex: '-1', text: t('resultats') });
+    zone.appendChild(el('p', { class: 'kicker', text: t('kicker') }));
     zone.appendChild(titre);
 
     var g = res.scores.global;
     var carte = el('div', { class: 'carte' },
-      el('h2', { text: 'Niveau de maturité' }),
+      el('h2', { text: t('maturite') }),
       el('div', { class: 'score-global' },
-        el('strong', { text: String(g).replace('.', ',') }),
-        el('span', { text: 'sur 5 · ' + libelleNiveau(Math.round(g)) })));
+        el('strong', { text: nombre(g) }),
+        el('span', { text: t('sur5') + ' · ' + libelleNiveau(Math.round(g)) })));
     res.scores.axes.forEach(function (a, i) {
       carte.appendChild(el('div', { class: 'axe' },
         el('div', { class: 'axe-tete' }, el('span', { text: a.titre }),
-          el('span', { text: String(a.score).replace('.', ',') + ' · ' + libelleNiveau(Math.round(a.score)) })),
-        el('div', { class: 'jauge', role: 'img', 'aria-label': a.titre + ' : ' + a.score + ' sur 5' },
+          el('span', { text: nombre(a.score) + ' · ' + libelleNiveau(Math.round(a.score)) })),
+        el('div', { class: 'jauge', role: 'img', 'aria-label': t('jauge')(a.titre, nombre(a.score)) },
           el('div', { style: 'width:' + (a.score / 5 * 100) + '%;background:' + COULEURS[i % COULEURS.length] }))));
     });
     zone.appendChild(carte);
 
-    zone.appendChild(el('h2', { style: 'margin-top:56px', text: 'Votre feuille de route.' }));
-    if (!res.feuille_de_route.length) {
-      zone.appendChild(el('p', { text: 'Vous êtes au niveau le plus élevé sur chaque question. L\'enjeu est maintenant de durer.' }));
-    } else {
-      zone.appendChild(el('p', { text: 'Peu de chantiers à la fois, dans le bon ordre. Les prérequis passent en premier.' }));
-    }
+    zone.appendChild(el('h2', { style: 'margin-top:56px', text: t('feuille') }));
+    zone.appendChild(el('p', { text: res.feuille_de_route.length ? t('feuille_intro') : t('feuille_vide') }));
     res.feuille_de_route.forEach(function (v) {
       var bloc = el('div', { class: 'vague' }, el('p', { class: 'vague-titre', text: v.libelle }));
       v.etapes.forEach(function (e) {
         var c = el('div', { class: 'carte etape' },
-          el('p', { class: 'etape-meta', text: e.axe + ' · niveau ' + e.de + ' → ' + e.vers + ' (' + e.vers_libelle + ')' }),
+          el('p', { class: 'etape-meta', text: e.axe + ' · ' + t('niveau_min') + ' ' + e.de + ' → ' + e.vers + ' (' + e.vers_libelle + ')' }),
           el('h3', { text: e.intitule }),
-          e.cible ? el('p', { text: 'Objectif : ' + e.cible }) : null);
+          e.cible ? el('p', { text: t('objectif') + e.cible }) : null);
         if (e.actions.length) {
           var ul = el('ul');
           e.actions.forEach(function (a) {
             var extra = [];
-            if (a.duree_semaines) extra.push('environ ' + a.duree_semaines + ' semaines');
-            if (a.offre && OFFRES[a.offre]) extra.push('offre : ' + OFFRES[a.offre]);
+            if (a.duree_semaines) extra.push(t('semaines')(a.duree_semaines));
+            if (a.offre && t('offres')[a.offre]) extra.push(t('offre') + t('offres')[a.offre]);
             ul.appendChild(el('li', null, el('strong', { text: a.titre }),
               a.description ? ' ' + a.description : null,
               extra.length ? el('span', { class: 'niv', text: extra.join(' · ') }) : null));
@@ -322,8 +494,8 @@ footer{border-top:1px solid #DADCD5;padding:32px 24px;text-align:center;font-siz
           c.appendChild(ul);
         }
         if (e.prerequis.length) {
-          c.appendChild(el('p', { class: 'prerequis', text: 'Prérequis : ' + e.prerequis.map(function (p) {
-            return p.intitule + ' au niveau ' + p.niveau_min + ' minimum';
+          c.appendChild(el('p', { class: 'prerequis', text: t('prerequis') + e.prerequis.map(function (p) {
+            return t('prerequis_item')(p.intitule, p.niveau_min);
           }).join(' ; ') + '.' }));
         }
         bloc.appendChild(c);
@@ -332,20 +504,47 @@ footer{border-top:1px solid #DADCD5;padding:32px 24px;text-align:center;font-siz
     });
 
     zone.appendChild(el('div', { class: 'actions-nav no-print' },
-      el('button', { type: 'button', class: 'btn btn-secondary', id: 'imprimer', text: 'Imprimer ou enregistrer en PDF' })));
+      el('button', { type: 'button', class: 'btn btn-secondary', id: 'imprimer', text: t('imprimer') })));
     zone.appendChild(el('div', { class: 'cta' },
-      el('h2', { text: 'Et maintenant ?' }),
-      el('p', { text: '30 minutes pour lire ces résultats ensemble et choisir par où commencer. Sans engagement.' }),
-      el('a', { class: 'btn', href: 'mailto:vincent@opalenext.fr?subject=' + encodeURIComponent('Diagnostic 4 Shifts : échanger sur mes résultats'), text: 'Échanger 30 minutes' })));
+      el('h2', { text: t('cta_titre') }),
+      el('p', { text: t('cta_texte') }),
+      el('a', { class: 'btn', href: 'mailto:vincent@opalenext.fr?subject=' + encodeURIComponent(t('cta_sujet')), text: t('cta_bouton') })));
     $('imprimer').addEventListener('click', function () { window.print(); });
 
-    titre.focus();
-    window.scrollTo(0, 0);
+    if (focus !== false) {
+      titre.focus();
+      window.scrollTo(0, 0);
+    }
+  }
+
+  // Changement de langue : on garde les réponses (les codes des questions ne changent pas)
+  // et on réaffiche l'écran en cours dans la nouvelle langue.
+  function changerLangue(nouvelle) {
+    if (nouvelle === langue) return;
+    langue = nouvelle;
+    try { localStorage.setItem(CLE_LANGUE, langue); } catch (e) { /* stockage indisponible */ }
+    var url = new URL(location.href);
+    url.searchParams.set('lang', langue);
+    history.replaceState(null, '', url);
+    appliquerTextesFixes();
+    chargerQuestionnaire().then(function () {
+      if (ecran === 'accueil') afficherAccueil();
+      else if (ecran === 'questions') afficherEtape(false);
+      else return calculer(true).then(function (res) { afficherResultats(res, false); });
+    }).catch(function (e) {
+      afficherErreur(ecran === 'accueil' ? 'erreur-chargement' : 'erreur-etape', (e && e.message) || t('indisponible'));
+    });
+  }
+
+  var boutonsLangue = document.querySelectorAll('[data-langue]');
+  for (var i = 0; i < boutonsLangue.length; i++) {
+    boutonsLangue[i].addEventListener('click', function () { changerLangue(this.getAttribute('data-langue')); });
   }
 
   $('commencer').addEventListener('click', function () {
     $('ecran-accueil').hidden = true;
     $('ecran-questions').hidden = false;
+    ecran = 'questions';
     etape = 0;
     afficherEtape();
   });
@@ -361,7 +560,11 @@ footer{border-top:1px solid #DADCD5;padding:32px 24px;text-align:center;font-siz
     else envoyer();
   });
 
-  chargement();
+  appliquerTextesFixes();
+  chargerQuestionnaire().then(afficherAccueil).catch(function (e) {
+    $('commencer').hidden = true;
+    afficherErreur('erreur-chargement', (e && e.message) || t('indisponible'));
+  });
 })();
 </script>
 </body>
