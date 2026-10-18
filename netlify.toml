@@ -1,6 +1,31 @@
 [build]
   publish = "."
 
+# Fonctions serverless (API du diagnostic). Variables d'environnement à définir dans Netlify :
+# SUPABASE_URL et SUPABASE_SECRET_KEY.
+[functions]
+  directory = "netlify/functions"
+  node_bundler = "esbuild"
+
+# Le code et les fichiers techniques du dépôt ne doivent pas être servis comme pages.
+[[redirects]]
+  from = "/netlify/*"
+  to = "/404.html"
+  status = 404
+  force = true
+
+[[redirects]]
+  from = "/db/*"
+  to = "/404.html"
+  status = 404
+  force = true
+
+[[redirects]]
+  from = "/tests/*"
+  to = "/404.html"
+  status = 404
+  force = true
+
 [[headers]]
   for = "/*"
   [headers.values]
