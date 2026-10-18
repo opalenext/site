@@ -4,6 +4,6 @@ Site vitrine d'Opale Next (Vincent Dupuis). Site statique, déployé par Netlify
 
 ## À compléter avant mise en ligne
 - [ ] Photo portrait (section À propos)
-- [ ] Numéro SIREN (pied de page)
-- [ ] Page mentions légales
+- [x] Numéro SIREN (pied de page)
+- [x] Page mentions légales (reste : adresse de l'établissement)
 - [ ] Liens LinkedIn et articles (section Réflexions)
