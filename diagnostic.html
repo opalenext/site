@@ -130,7 +130,7 @@ footer{border-top:1px solid #DADCD5;padding:32px 24px;text-align:center;font-siz
   'use strict';
   var API = '/api/diagnostic';
   var CLE_LANGUE = 'diagnostic-langue';
-  var COULEURS = ['#0F6E5D', '#A74018', '#8C64A8', '#2C5687', '#A97A1F'];
+  var COULEUR_JAUGE = '#0F6E5D'; // vert de l'accent : les couleurs des facettes OPALE ne correspondent pas aux shifts
 
   // Textes de l'interface. Le contenu du diagnostic (questions, niveaux, actions) vient du classeur, dans la langue demandée.
   var TEXTES = {
@@ -467,12 +467,12 @@ footer{border-top:1px solid #DADCD5;padding:32px 24px;text-align:center;font-siz
       el('div', { class: 'score-global' },
         el('strong', { text: nombre(g) }),
         el('span', { text: t('sur5') + ' · ' + libelleNiveau(Math.round(g)) })));
-    res.scores.axes.forEach(function (a, i) {
+    res.scores.axes.forEach(function (a) {
       carte.appendChild(el('div', { class: 'axe' },
         el('div', { class: 'axe-tete' }, el('span', { text: a.titre }),
           el('span', { text: nombre(a.score) + ' · ' + libelleNiveau(Math.round(a.score)) })),
         el('div', { class: 'jauge', role: 'img', 'aria-label': t('jauge')(a.titre, nombre(a.score)) },
-          el('div', { style: 'width:' + (a.score / 5 * 100) + '%;background:' + COULEURS[i % COULEURS.length] }))));
+          el('div', { style: 'width:' + (a.score / 5 * 100) + '%;background:' + COULEUR_JAUGE }))));
     });
     zone.appendChild(carte);
 
