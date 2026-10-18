@@ -6,7 +6,9 @@ import {
   validerSaisie,
   calculerScores,
   construireFeuilleDeRoute,
+  lignesResultat,
 } from '../netlify/lib/diagnostic.mjs';
+import { lignesEnObjets, aligner } from '../netlify/lib/sheets.mjs';
 
 const niveaux = [1, 2, 3, 4, 5].map((n) => ({ niveau: n, libelle_fr: `N${n}`, libelle_en: `L${n}` }));
 const reponsesPour = (id) => [1, 2, 3, 4, 5].map((n) => ({ question_id: id, niveau: n, libelle_fr: `${id} niveau ${n}` }));
@@ -119,4 +121,37 @@ test('une dépendance vers une question désactivée est ignorée', () => {
   ref.dependances = [{ question_id: 'B1', niveau_cible: 3, prerequis_question_id: 'X1', prerequis_niveau_min: 5 }];
   const vagues = construireFeuilleDeRoute(ref, { A1: 5, A2: 5, B1: 2 }, 'fr');
   assert.equal(vagues[0].etapes[0].question_id, 'B1');
+});
+
+test('onglet Google Sheets : en-têtes, nombres, cases à cocher, lignes vides ignorées', () => {
+  const objets = lignesEnObjets([
+    ['id', 'axe_id', 'ordre', 'poids', 'actif', 'intitule_fr'],
+    ['ORG-1', 'organisation', 1, '1,5', true, '  Pilotage  '],
+    [],
+    ['', 'organisation', 2],
+    ['ORG-2', 'organisation', '2', '', 'non'],
+  ]);
+  assert.deepEqual(objets, [
+    { id: 'ORG-1', axe_id: 'organisation', ordre: 1, poids: 1.5, actif: true, intitule_fr: 'Pilotage' },
+    { id: 'ORG-2', axe_id: 'organisation', ordre: 2, poids: null, actif: false, intitule_fr: null },
+  ]);
+  assert.deepEqual(lignesEnObjets(undefined), []);
+});
+
+test('lignes enregistrées : alignées sur les colonnes du classeur, profil en libellé', () => {
+  const ref = referentiel();
+  const reponses = { A1: 1, A2: 5, B1: 2 };
+  const scores = calculerScores(ref, reponses, 'fr');
+  const { diagnostic, reponses: lignes } = lignesResultat(ref, {
+    id: 'abc', date: new Date('2026-10-18T12:00:00Z'), reponses, profil: { fonction: 'rh', taille: null, secteur: null }, langue: 'fr', scores,
+  });
+  assert.deepEqual(
+    aligner(['id', 'date', 'fonction', 'taille', 'score_global', 'score_a', 'A2', 'colonne_libre'], diagnostic),
+    ['abc', '2026-10-18 14:00:00', 'RH', '', 3, 4, 5, ''],
+  );
+  assert.equal(lignes.length, 3);
+  assert.deepEqual(lignes[0], {
+    diagnostic_id: 'abc', date: '2026-10-18 14:00:00', fonction: 'RH', taille: '', secteur: '',
+    axe: 'Axe A', question_id: 'A1', question: 'Question A1', niveau: 1,
+  });
 });

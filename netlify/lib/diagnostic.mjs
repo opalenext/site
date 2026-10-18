@@ -208,3 +208,22 @@ export function construireFeuilleDeRoute(ref, reponses, langue) {
   }
   return vagues;
 }
+
+// Lignes à ajouter au classeur : une ligne de synthèse (onglet diagnostics) et une ligne par
+// question (onglet reponses, pratique pour les tableaux croisés dynamiques).
+// Le profil est enregistré avec son libellé français, plus lisible dans les analyses.
+export function lignesResultat(ref, { id, date, reponses, profil, langue, scores }) {
+  const horodatage = date.toLocaleString('sv-SE', { timeZone: 'Europe/Paris' });
+  const libelles = {};
+  for (const champ of CHAMPS_PROFIL) {
+    const option = ref.profil_options.find((o) => o.champ === champ && o.code === profil[champ]);
+    libelles[champ] = option ? option.libelle_fr : '';
+  }
+  const commun = { diagnostic_id: id, date: horodatage, ...libelles };
+  const diagnostic = { id, date: horodatage, langue, ...libelles, score_global: scores.global, ...reponses };
+  for (const a of scores.axes) diagnostic[`score_${a.id}`] = a.score;
+  const lignes = questionsActives(ref)
+    .filter((q) => reponses[q.id] !== undefined)
+    .map((q) => ({ ...commun, axe: q.axe.titre_fr, question_id: q.id, question: q.intitule_fr, niveau: reponses[q.id] }));
+  return { diagnostic, reponses: lignes };
+}

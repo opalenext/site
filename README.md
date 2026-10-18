@@ -5,7 +5,7 @@ Site vitrine d'Opale Next (Vincent Dupuis). Site statique, déployé par Netlify
 ## Diagnostic 4 Shifts
 - Page : `diagnostic.html`. Elle ne contient aucune question : tout vient de `/api/diagnostic`.
 - API : `netlify/functions/diagnostic.mjs`, logique dans `netlify/lib/`.
-- Base : Supabase, schéma dans `db/schema.sql`. Variables Netlify : `SUPABASE_URL`, `SUPABASE_SECRET_KEY`.
+- Données : un classeur Google Sheets privé (référentiel + réponses). Variables Netlify : `GOOGLE_SHEET_ID`, `GOOGLE_SERVICE_ACCOUNT_EMAIL`, `GOOGLE_PRIVATE_KEY`.
 - Tests : `node --test`.
 
 ## À compléter avant mise en ligne

@@ -2,13 +2,15 @@
 //   GET  /api/diagnostic?lang=fr  → questions et niveaux (sans les actions ni les dépendances)
 //   POST /api/diagnostic          → enregistre les réponses, renvoie scores et feuille de route
 
-import { lireReferentiel, enregistrerDiagnostic } from '../lib/supabase.mjs';
+import { randomUUID } from 'node:crypto';
+import { lireReferentiel, enregistrerDiagnostic } from '../lib/sheets.mjs';
 import {
   langueValide,
   questionnairePublic,
   validerSaisie,
   calculerScores,
   construireFeuilleDeRoute,
+  lignesResultat,
 } from '../lib/diagnostic.mjs';
 
 const TAILLE_MAX = 20_000;
@@ -45,7 +47,7 @@ export default async (req) => {
     const ref = await chargerReferentiel();
     if (!ref) return json({ erreur: 'Le diagnostic est momentanément indisponible.' }, 503);
     const langue = langueValide(new URL(req.url).searchParams.get('lang'));
-    // Cache CDN d'une minute : une modification dans Supabase apparaît sur le site en une minute au plus.
+    // Cache CDN d'une minute : une modification dans le classeur apparaît sur le site en une minute au plus.
     return json(questionnairePublic(ref, langue), 200, {
       'Cache-Control': 'public, max-age=0, must-revalidate',
       'Netlify-CDN-Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300',
@@ -78,13 +80,7 @@ export default async (req) => {
   // Si l'enregistrement échoue, le visiteur reçoit quand même son résultat.
   let enregistre = true;
   try {
-    await enregistrerDiagnostic({
-      langue,
-      ...profil,
-      score_global: scores.global,
-      scores_axes: Object.fromEntries(scores.axes.map((a) => [a.id, a.score])),
-      reponses,
-    });
+    await enregistrerDiagnostic(ref, lignesResultat(ref, { id: randomUUID(), date: new Date(), reponses, profil, langue, scores }));
   } catch (e) {
     console.error(e);
     enregistre = false;
